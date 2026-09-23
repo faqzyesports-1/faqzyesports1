@@ -1,1 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Availability</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f6f8;color:#1f2937}
+header{background:#111827;color:#fff;padding:20px 24px}
+.header-inner{max-width:1250px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:15px}
+.logo{font-size:24px;font-weight:800}.back{color:#fff;text-decoration:none;background:#374151;padding:10px 14px;border-radius:8px}
+.container{max-width:1250px;margin:28px auto;padding:0 18px}
+.card{background:#fff;border-radius:12px;padding:22px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+h2{margin-top:0}
+button,input,select{font:inherit}
+button{border:0;border-radius:8px;padding:10px 14px;cursor:pointer;font-weight:700}
+.primary{background:#2563eb;color:#fff}.secondary{background:#e5e7eb;color:#111827}.danger{background:#fee2e2;color:#b91c1c}
+input,select{padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;background:#fff}
+.teams{display:flex;gap:9px;flex-wrap:wrap}.team-btn{background:#e5e7eb}.team-btn.active{background:#2563eb;color:#fff}
+.add{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.add input{min-width:240px}
+.person-form{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:15px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-weight:700;font-size:14px}
+.person-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #e5e7eb}.person-row:last-child{border-bottom:0}.person-buttons{display:flex;gap:8px}
+.selected{background:#f3f4f6;padding:13px;border-radius:8px;margin-bottom:18px}
+.week-grid{display:grid;gap:10px}.day-row{display:grid;grid-template-columns:170px 1fr auto;gap:12px;align-items:center;padding:14px;background:#f9fafb;border-radius:9px}
+.day-name{font-weight:700}.time-blocks{display:flex;flex-direction:column;gap:8px}.time-block{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.time-block input{width:120px}
+.empty{color:#9ca3af;font-size:14px}.message{display:none;background:#dcfce7;color:#166534;padding:12px;border-radius:8px;margin-bottom:18px}
+.timezone-info{margin-top:12px;padding:12px;background:#eff6ff;color:#1e40af;border-radius:8px}
+.overview-day{border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:15px}.overview-day-header{background:#111827;color:#fff;padding:13px 16px;font-weight:700}.overview-content{padding:14px}
+.availability-row{display:grid;grid-template-columns:160px 160px 1fr;gap:14px;align-items:center;padding:11px;background:#f9fafb;border-radius:8px;margin-bottom:8px}
+.availability-time{font-weight:700}.availability-names{display:flex;gap:7px;flex-wrap:wrap}.person-badge{padding:6px 10px;background:#dbeafe;color:#1e40af;border-radius:20px;font-size:13px;font-weight:700}
+.everyone{background:#dcfce7;color:#166534;border:1px solid #86efac;padding:13px;border-radius:8px;margin-bottom:14px}.everyone strong{display:block;margin-bottom:5px}
+.week-title{display:flex;justify-content:space-between;align-items:end;gap:15px;flex-wrap:wrap}.week-range{color:#6b7280;font-size:14px}.note{color:#6b7280;font-size:14px}
+@media(max-width:800px){.day-row,.availability-row{grid-template-columns:1fr}.person-row{align-items:flex-start;flex-direction:column}.person-buttons{width:100%}.person-buttons button{flex:1}}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div><div class="logo">📅 Team Availability</div><div>Weekly team availability planner</div></div>
+    <a class="back" href="index.html">← Team Hub</a>
+  </div>
+</header>
 
+<main class="container">
+<div id="message" class="message"></div>
+
+<section class="card">
+  <h2>Teams</h2>
+  <div id="teamsList" class="teams"></div>
+  <div class="add">
+    <input id="newTeamName" placeholder="Enter a new team name">
+    <button class="primary" onclick="addTeam()">+ Add Team</button>
+  </div>
+</section>
+
+<section class="card">
+  <h2>People</h2>
+  <div class="person-form">
+    <div class="field">
+      <label for="personName">Name</label>
+      <input id="personName" placeholder="For example: John">
+    </div>
+    <button class="primary" onclick="addPerson()">+ Add Person</button>
+  </div>
+  <div id="peopleList"></div>
+</section>
+
+<section class="card">
+  <h2>🌍 Timezone</h2>
+  <div class="field">
+    <label for="timezone">Your main timezone</label>
+    <select id="timezone" onchange="changeTimezone()">
+      <option value="Europe/Amsterdam">Netherlands — CET / CEST</option>
+      <option value="Europe/London">United Kingdom — GMT / BST</option>
+    </select>
+  </div>
+  <div id="timezoneInfo" class="timezone-info"></div>
+</section>
+
+<section class="card">
+  <div class="week-title">
+    <div>
+      <h2>📆 Current Week</h2>
+      <div id="weekRange" class="week-range"></div>
+    </div>
+    <div class="note">Availability automatically starts fresh each Monday.</div>
+  </div>
+  <div class="selected">
+    <div><strong>Team:</strong> <span id="selectedTeamName">-</span></div>
+    <div><strong>Person:</strong> <span id="selectedPersonName">-</span></div>
+  </div>
+  <div id="weekGrid" class="week-grid"></div>
+  <br>
+  <button class="primary" onclick="saveAvailability()">💾 Save Availability</button>
+</section>
+
+<section class="card">
+  <h2>👥 Team Availability Overview</h2>
+  <p class="note">The overview shows exactly who is available in each time period. It also highlights when everyone on the selected team is available.</p>
+  <div id="teamOverview"></div>
+</section>
+</main>
+
+<script>
+const DAYS=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+const WEEK_KEY="availabilityWeekStart";
+const DATA_KEY="teamAvailabilityData";
+const API_URL="/api/state/availability";
+const DEFAULT_TEAMS=["Team Movarox","Team Zaner","Team Polar","Team Ravix","Academy","Junior Academy"];
+
+function mondayKey(date=new Date()){
+  const d=new Date(date); d.setHours(0,0,0,0);
+  const day=d.getDay();
+  const diff=day===0?-6:1-day;
+  d.setDate(d.getDate()+diff);
+  return d.toISOString().slice(0,10);
+}
+function formatDate(date){return new Intl.DateTimeFormat("en-GB",{day:"2-digit",month:"short",year:"numeric"}).format(date)}
+function currentWeekRange(){
+  const start=new Date(mondayKey()+"T00:00:00");
+  const end=new Date(start); end.setDate(end.getDate()+6);
+  return {start,end,key:mondayKey(start)};
+}
+function emptyAvailability(){
+  const a={}; DAYS.forEach(d=>a[d]=[]); return a;
+}
+function normalizePerson(p){
+  p.availability=p.availability||emptyAvailability();
+  DAYS.forEach(d=>{if(!Array.isArray(p.availability[d]))p.availability[d]=[]});
+  return p;
+}
+function loadData(){
+  let raw=localStorage.getItem(DATA_KEY), parsed=null;
+  try{parsed=raw?JSON.parse(raw):null}catch(e){}
+  if(!parsed||!Array.isArray(parsed.teams)) parsed={teams:[]};
+  DEFAULT_TEAMS.forEach(name=>{
+    if(!parsed.teams.some(t=>t.name.toLowerCase()===name.toLowerCase()))
+      parsed.teams.push({id:crypto.randomUUID(),name,people:[]});
+  });
+  parsed.teams.forEach(t=>{if(!Array.isArray(t.people))t.people=[];t.people.forEach(normalizePerson)});
+  return parsed;
+}
+let data=loadData();
+let selectedTeamId=data.teams[0]?.id||null;
+let selectedPersonId=null;
+let pendingDeletePersonId=null;
+let sharedReady=false;
+let pendingRemoteSave=false;
+let remoteSaveInFlight=false;
+let sharedUpdatedAt=null;
+
+function saveData(){
+  localStorage.setItem(DATA_KEY,JSON.stringify(data));
+  pendingRemoteSave=true;
+  flushSharedSave();
+}
+async function flushSharedSave(){
+  if(!sharedReady||remoteSaveInFlight||!pendingRemoteSave)return;
+  remoteSaveInFlight=true;
+  pendingRemoteSave=false;
+  try{
+    const response=await fetch(API_URL,{
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        teams:data.teams,
+        weekKey:localStorage.getItem(WEEK_KEY)||mondayKey()
+      })
+    });
+    if(!response.ok)throw new Error("Shared save failed");
+    const result=await response.json();
+    sharedUpdatedAt=result.updatedAt||sharedUpdatedAt;
+  }catch(error){
+    pendingRemoteSave=true;
+    console.warn("Shared availability save failed.",error);
+  }finally{
+    remoteSaveInFlight=false;
+    if(pendingRemoteSave)flushSharedSave();
+  }
+}
+function applySharedAvailability(sharedData){
+  if(!sharedData||!Array.isArray(sharedData.teams))return;
+  data=sharedData;
+  data.teams.forEach(team=>{
+    if(!Array.isArray(team.people))team.people=[];
+    team.people.forEach(normalizePerson);
+  });
+  selectedTeamId=data.teams[0]?.id||null;
+  selectedPersonId=null;
+  localStorage.setItem(DATA_KEY,JSON.stringify(data));
+  if(sharedData.weekKey)localStorage.setItem(WEEK_KEY,sharedData.weekKey);
+}
+async function hydrateSharedAvailability(){
+  try{
+    const response=await fetch(API_URL,{cache:"no-store"});
+    if(!response.ok)throw new Error("Shared availability unavailable");
+    const state=await response.json();
+    if(state.exists){
+      if(state.updatedAt===sharedUpdatedAt)return;
+      pendingRemoteSave=false;
+      applySharedAvailability(state.data);
+      sharedUpdatedAt=state.updatedAt||null;
+    }else if(data.teams.length){
+      sharedReady=true;
+      pendingRemoteSave=true;
+      await flushSharedSave();
+      return;
+    }
+    sharedReady=true;
+    await flushSharedSave();
+    renderAll();
+  }catch(error){
+    sharedReady=true;
+    console.warn("Shared availability load failed.",error);
+  }
+}
+function ensureCurrentWeek(){
+  const key=mondayKey();
+  const stored=localStorage.getItem(WEEK_KEY);
+  if(stored!==key){
+    data.teams.forEach(t=>t.people.forEach(p=>p.availability=emptyAvailability()));
+    localStorage.setItem(WEEK_KEY,key);
+    saveData();
+  }
+}
+function getSelectedTeam(){return data.teams.find(t=>t.id===selectedTeamId)}
+function addTeam(){
+  const input=document.getElementById("newTeamName"),name=input.value.trim();
+  if(!name)return alert("Please enter a team name.");
+  if(data.teams.some(t=>t.name.toLowerCase()===name.toLowerCase()))return alert("That team already exists.");
+  const team={id:crypto.randomUUID(),name,people:[]};data.teams.push(team);selectedTeamId=team.id;selectedPersonId=null;input.value="";
+  saveData();renderAll();showMessage("Team added.");
+}
+function addPerson(){
+  const team=getSelectedTeam(),input=document.getElementById("personName"),name=input.value.trim();
+  if(!team)return alert("Please select a team first.");
+  if(!name)return alert("Please enter a name.");
+  if(team.people.some(p=>p.name.toLowerCase()===name.toLowerCase()))return alert("That person is already on this team.");
+  const person={id:crypto.randomUUID(),name,availability:emptyAvailability()};team.people.push(person);selectedPersonId=person.id;input.value="";
+  saveData();renderAll();showMessage(name+" added.");
+}
+function deletePerson(personId){
+  const team=getSelectedTeam();
+  const person=team?.people.find(p=>p.id===personId);
+  if(!team||!person)return;
+  team.people=team.people.filter(p=>p.id!==personId);
+  if(selectedPersonId===personId)selectedPersonId=null;
+  pendingDeletePersonId=null;
+  saveData();renderAll();showMessage(person.name+" deleted.");
+}
+function removeAvailabilityBlock(person,day,block){
+  const availability=person.availability[day]||[];
+  const index=availability.indexOf(block);
+  if(index===-1)return;
+  availability.splice(index,1);
+  saveData();renderWeek();renderOverview();showMessage("Availability removed.");
+}
+function renderTeams(){
+  const c=document.getElementById("teamsList");c.innerHTML="";
+  data.teams.forEach(team=>{
+    const b=document.createElement("button");b.className="team-btn"+(team.id===selectedTeamId?" active":"");b.textContent=team.name;
+    b.onclick=()=>{selectedTeamId=team.id;selectedPersonId=null;renderAll()};c.appendChild(b);
+  });
+}
+function renderPeople(){
+  const c=document.getElementById("peopleList");c.innerHTML="";const team=getSelectedTeam();
+  if(!team){return}
+  if(!team.people.length){c.innerHTML='<div class="empty">No people have been added to this team yet.</div>';return}
+  team.people.forEach(p=>{
+    const row=document.createElement("div");row.className="person-row";
+    const name=document.createElement("strong");name.textContent=p.name;
+    const buttons=document.createElement("div");buttons.className="person-buttons";
+    const select=document.createElement("button");select.className=p.id===selectedPersonId?"primary":"secondary";select.textContent=p.id===selectedPersonId?"Selected":"Select";select.onclick=()=>{selectedPersonId=p.id;renderPeople();renderWeek()};
+    const del=document.createElement("button");del.type="button";del.className="danger";del.textContent="Delete";del.onclick=()=>{
+      if(pendingDeletePersonId!==p.id){
+        pendingDeletePersonId=p.id;
+        del.textContent="Confirm delete";
+        del.setAttribute("aria-label","Confirm deleting "+p.name);
+        return;
+      }
+      deletePerson(p.id);
+    };
+    buttons.append(select,del);row.append(name,buttons);c.appendChild(row);
+  });
+}
+function renderWeek(){
+  const team=getSelectedTeam(),person=team?.people.find(p=>p.id===selectedPersonId),grid=document.getElementById("weekGrid");
+  const range=currentWeekRange();document.getElementById("weekRange").textContent=formatDate(range.start)+" → "+formatDate(range.end);
+  document.getElementById("selectedTeamName").textContent=team?.name||"-";document.getElementById("selectedPersonName").textContent=person?.name||"-";grid.innerHTML="";
+  if(!person){grid.innerHTML='<div class="empty">Select a person to enter their availability.</div>';return}
+  DAYS.forEach((day,i)=>{
+    const date=new Date(range.start);date.setDate(date.getDate()+i);
+    const row=document.createElement("div");row.className="day-row";
+    const title=document.createElement("div");title.className="day-name";title.textContent=day+" — "+formatDate(date);
+    const blocks=document.createElement("div");blocks.className="time-blocks";const av=person.availability[day]||[];
+    if(!av.length){const e=document.createElement("div");e.className="empty";e.textContent="Not available";blocks.appendChild(e)}
+    av.forEach((block,index)=>createTimeBlock(blocks,person,day,index,block));
+    const add=document.createElement("button");add.className="secondary";add.textContent="+ Time";add.onclick=()=>{person.availability[day].push({start:"18:00",end:"22:00"});saveData();renderWeek();renderOverview()};
+    row.append(title,blocks,add);grid.appendChild(row);
+  });
+}
+function createTimeBlock(container,person,day,index,block){
+  const wrap=document.createElement("div");wrap.className="time-block";
+  const start=document.createElement("input");start.type="time";start.value=block.start;start.onchange=()=>{block.start=start.value;saveData();renderOverview()};
+  const sep=document.createElement("span");sep.textContent="to";
+  const end=document.createElement("input");end.type="time";end.value=block.end;end.onchange=()=>{block.end=end.value;saveData();renderOverview()};
+  const del=document.createElement("button");del.type="button";del.className="danger";del.textContent="Remove";del.onclick=()=>removeAvailabilityBlock(person,day,block);
+  wrap.append(start,sep,end,del);container.appendChild(wrap);
+}
+function minutes(t){const [h,m]=t.split(":").map(Number);return h*60+m}
+function time(m){return String(Math.floor(m/60)%24).padStart(2,"0")+":"+String(m%60).padStart(2,"0")}
+function segments(team,day){
+  const events=[];team.people.forEach(p=>(p.availability[day]||[]).forEach(b=>{const s=minutes(b.start),e=minutes(b.end);if(e>s)events.push({s,e,name:p.name})}));
+  const points=[...new Set(events.flatMap(x=>[x.s,x.e]))].sort((a,b)=>a-b),out=[];
+  for(let i=0;i<points.length-1;i++){const s=points[i],e=points[i+1],people=events.filter(x=>x.s<=s&&x.e>=e).map(x=>x.name);if(people.length)out.push({s,e,people})}
+  return merge(out);
+}
+function merge(arr){
+  const out=[];arr.forEach(x=>{const last=out[out.length-1];if(last&&last.e===x.s&&same(last.people,x.people))last.e=x.e;else out.push({...x})});return out;
+}
+function same(a,b){return a.length===b.length&&[...a].sort().every((x,i)=>x===[...b].sort()[i])}
+function tzOffset(date,tz){
+  const parts=new Intl.DateTimeFormat("en-US",{timeZone:tz,hour12:false,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"}).formatToParts(date),v={};parts.forEach(x=>v[x.type]=x.value);
+  return (Date.UTC(+v.year,+v.month-1,+v.day,+v.hour,+v.minute,+v.second)-date.getTime())/60000;
+}
+function convertAmsterdamToLondon(t){
+  const d=new Date(),diff=(tzOffset(d,"Europe/Amsterdam")-tzOffset(d,"Europe/London"));let x=minutes(t)-diff;x=(x+1440)%1440;return time(x)
+}
+function renderOverview(){
+  const c=document.getElementById("teamOverview"),team=getSelectedTeam();c.innerHTML="";
+  if(!team||!team.people.length){c.innerHTML='<div class="empty">Add people to this team to see the overview.</div>';return}
+  DAYS.forEach(day=>{
+    const box=document.createElement("div");box.className="overview-day";const head=document.createElement("div");head.className="overview-day-header";head.textContent=day;const content=document.createElement("div");content.className="overview-content";const segs=segments(team,day);
+    if(!segs.length){content.innerHTML='<div class="empty">No availability entered.</div>'}
+    else{
+      const common=segs.filter(s=>s.people.length===team.people.length);
+      if(common.length){const e=document.createElement("div");e.className="everyone";const strong=document.createElement("strong");strong.textContent="🟢 Everyone is available";e.appendChild(strong);common.forEach(s=>{const d=document.createElement("div");d.textContent="CET/CEST: "+time(s.s)+"–"+time(s.e)+"  |  GMT/BST: "+convertAmsterdamToLondon(time(s.s))+"–"+convertAmsterdamToLondon(time(s.e));e.appendChild(d)});content.appendChild(e)}
+      segs.forEach(s=>{const row=document.createElement("div");row.className="availability-row";const a=document.createElement("div");a.className="availability-time";a.textContent="🇳🇱 "+time(s.s)+"–"+time(s.e)+" CET/CEST";const b=document.createElement("div");b.className="availability-time";b.textContent="🇬🇧 "+convertAmsterdamToLondon(time(s.s))+"–"+convertAmsterdamToLondon(time(s.e))+" GMT/BST";const n=document.createElement("div");n.className="availability-names";s.people.forEach(name=>{const badge=document.createElement("span");badge.className="person-badge";badge.textContent=name;n.appendChild(badge)});row.append(a,b,n);content.appendChild(row)})
+    }
+    box.append(head,content);c.appendChild(box)
+  })
+}
+function saveAvailability(){saveData();renderOverview();showMessage("Availability saved.")}
+function changeTimezone(){localStorage.setItem("availabilityTimezone",document.getElementById("timezone").value);updateTimezoneInfo()}
+function updateTimezoneInfo(){const tz=document.getElementById("timezone").value;document.getElementById("timezoneInfo").innerHTML=tz==="Europe/Amsterdam"?"🇳🇱 Main timezone: <strong>CET / CEST</strong>.":"🇬🇧 Main timezone: <strong>GMT / BST</strong>."}
+function showMessage(text){const m=document.getElementById("message");m.textContent=text;m.style.display="block";setTimeout(()=>m.style.display="none",2200)}
+function renderAll(){renderTeams();renderPeople();renderWeek();renderOverview()}
+ensureCurrentWeek();const savedTZ=localStorage.getItem("availabilityTimezone");if(savedTZ)document.getElementById("timezone").value=savedTZ;updateTimezoneInfo();renderAll();hydrateSharedAvailability();setInterval(()=>hydrateSharedAvailability(),5000);
+</script>
+</body>
+</html>

@@ -1,1 +1,55 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Hub</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#0b0d12;color:#fff;min-height:100vh}
+header{background:#11141b;border-bottom:1px solid #252a35;padding:24px}
+.header-inner{max-width:1100px;margin:auto}
+.logo{font-size:28px;font-weight:800}
+.subtitle{color:#9ca3af;margin-top:7px}
+.container{max-width:1100px;margin:45px auto;padding:0 20px}
+h1{font-size:34px;margin:0 0 10px}
+.intro{color:#9ca3af;margin-bottom:30px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.card{display:block;text-decoration:none;color:inherit;background:#11141b;border:1px solid #252a35;border-radius:16px;padding:28px;transition:.2s}
+.card:hover{transform:translateY(-3px);border-color:#3b82f6;background:#151923}
+.icon{font-size:42px;margin-bottom:18px}
+.card h2{margin:0 0 10px}
+.card p{color:#9ca3af;line-height:1.5;margin:0}
+.arrow{display:inline-block;margin-top:22px;font-weight:700;color:#60a5fa}
+.info{margin-top:28px;background:#11141b;border:1px solid #252a35;border-radius:14px;padding:18px;color:#9ca3af}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.container{margin:30px auto}h1{font-size:28px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="logo">Team Hub</div>
+    <div class="subtitle">Manage team availability and scrim results in one place.</div>
+  </div>
+</header>
+<main class="container">
+  <h1>What do you want to do?</h1>
+  <p class="intro">Choose a section below.</p>
+  <div class="grid">
+    <a class="card" href="availability.html">
+      <div class="icon">📅</div>
+      <h2>Team Availability</h2>
+      <p>Enter weekly availability, see who is online, compare CET/CEST with GMT/BST, and find times when the whole team can play.</p>
+      <span class="arrow">Open Availability →</span>
+    </a>
+    <a class="card" href="scrim-results.html">
+      <div class="icon">🎮</div>
+      <h2>Scrim Results</h2>
+      <p>Review your scrim history or update it..</p>
+      <span class="arrow">Open Scrim Results →</span>
+    </a>
+  </div>
+  <div class="info">Availability and scrim data are shared with everyone using this Team Hub.</div>
+</main>
+</body>
+</html>
